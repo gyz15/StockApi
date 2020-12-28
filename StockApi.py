@@ -1,6 +1,7 @@
 import os
 from dotenv import load_dotenv
 import requests
+import time
 load_dotenv()
 
 API_KEY = os.getenv('ALPHAVANTAGE')
@@ -38,4 +39,27 @@ stock_data = {
 #     '''
 #           )
 
-print({} == {})
+# todo cashflow & cagr
+# print({} == {})
+
+
+def get_cash_flow(symbol, api_key):
+    # todo wait if get
+    net_income = []
+    fiscal_date_ending = []
+    free_cash_flow = []
+    data = requests.get(
+        f"https://www.alphavantage.co/query?function=CASH_FLOW&symbol={symbol}&apikey={api_key}").json()
+    if "Note" in data.keys():
+        time.sleep(60)
+    else:
+        for i in range(3):
+            fiscal_date_ending.append(
+                data['annualReports'][i]['fiscalDateEnding'])
+            net_income.append(int(data['annualReports'][i]['netIncome']))
+            free_cash_flow.append(int(data['annualReports'][i]['operatingCashflow'])-int(
+                data['annualReports'][i]['capitalExpenditures']))
+        return {"fiscal_date_ending": fiscal_date_ending, "net_income": net_income, "free_cash_flow": free_cash_flow}
+
+
+print(get_cash_flow('tsla', API_KEY))
